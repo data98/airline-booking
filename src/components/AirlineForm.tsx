@@ -12,6 +12,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
     <Bounded>
       <h1 className="font-body font-bold text-xl text-center">
         Welcome to the Digido Airlines!
+        {/* comment for testing commiting by ssh*/}
       </h1>
     </Bounded>
   );
