@@ -87,5 +87,6 @@
 
 
 .main-input {
-  width: 160px;
+  min-width: 160px;
+  width: 100%;
 }

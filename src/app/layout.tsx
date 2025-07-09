@@ -2,6 +2,7 @@ import clsx from "clsx";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter, Nunito, Nunito_Sans } from "next/font/google";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={clsx(nunito.variable, nunitoSans.variable)}>
         {children}
+        <Toaster/>
       </body>
     </html>
   );
