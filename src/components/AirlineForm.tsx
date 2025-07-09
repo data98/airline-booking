@@ -113,7 +113,6 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
     toast.success("Submitting...");
   };
 
-
   return (
     <Bounded>
       <h1 className="font-body font-bold text-xl text-center">
@@ -211,7 +210,8 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                         !isDayAvailable(date, origin) ||
                         (tripType === "roundtrip" && toDate
                           ? date > toDate
-                          : false)
+                          : false) ||
+                        date < new Date(new Date().setHours(0, 0, 0, 0))
                       }
                     />
                   </PopoverContent>
@@ -252,7 +252,8 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                         }}
                         disabled={(date) =>
                           !isDayAvailable(date, destination) ||
-                          (fromDate ? date < fromDate : false)
+                          (fromDate ? date < fromDate : false) ||
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
                         }
                       />
                     </PopoverContent>
