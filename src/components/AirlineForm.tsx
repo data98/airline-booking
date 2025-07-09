@@ -87,13 +87,40 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
     // update URL params
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!origin || !destination) {
+      toast.error("Please select both origin and destination.");
+      return;
+    }
+
+    if (origin === destination) {
+      toast.error("Origin and destination cannot be the same.");
+      return;
+    }
+
+    if (!fromDate) {
+      toast.error("Please select a departure date.");
+      return;
+    }
+
+    if (tripType === "roundtrip" && !toDate) {
+      toast.error("Please select a return date.");
+      return;
+    }
+
+    toast.success("Submitting...");
+  };
+
+
   return (
     <Bounded>
       <h1 className="font-body font-bold text-xl text-center">
         Welcome to the Digido Airlines!
       </h1>
 
-      <form className="w-full flex justify-center">
+      <form onSubmit={handleSubmit} className="w-full flex justify-center">
         <div className="mt-24 border rounded-lg p-8 flex flex-col items-start gap-6 w-[500px]">
           {/* Trip Type */}
           <RadioGroup
