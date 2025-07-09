@@ -166,7 +166,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                         }
                         setFromDate(date);
                       }}
-                      disabled={(date) => !isDayAvailable(date, origin)}
+                      disabled={(date) => !isDayAvailable(date, origin) || (toDate ? date > toDate : false)}
                     />
                   </PopoverContent>
                 </Popover>
@@ -204,7 +204,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                           }
                           setToDate(date);
                         }}
-                        disabled={(date) => !isDayAvailable(date, destination)}
+                        disabled={(date) => !isDayAvailable(date, destination) || (fromDate ? date < fromDate : false)}
                       />
                     </PopoverContent>
                   </Popover>
