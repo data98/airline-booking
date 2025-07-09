@@ -35,6 +35,16 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
 
+  const handleTripTypeChange = (type: "roundtrip" | "oneway") => {
+    setTripType(type);
+
+    if (type === "oneway" && toDate) {
+      setToDate(undefined);
+    }
+
+    // update URL params
+  };
+
   const getDestinationByCode = (
     code: string
   ): FlightDestination | undefined => {
@@ -60,6 +70,8 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
         "Previously selected departure date is unavailable for the new origin."
       );
     }
+
+    // update URL params
   };
 
   const handleDestinationChange = (code: string) => {
@@ -71,6 +83,8 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
         "Previously selected return date is unavailable for the new destination."
       );
     }
+
+    // update URL params
   };
 
   return (
@@ -84,7 +98,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
           {/* Trip Type */}
           <RadioGroup
             value={tripType}
-            onValueChange={(v) => setTripType(v as "roundtrip" | "oneway")}
+            onValueChange={handleTripTypeChange}
             className="flex justify-center gap-8"
           >
             <div className="flex items-center gap-2">
@@ -166,7 +180,12 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                         }
                         setFromDate(date);
                       }}
-                      disabled={(date) => !isDayAvailable(date, origin) || (toDate ? date > toDate : false)}
+                      disabled={(date) =>
+                        !isDayAvailable(date, origin) ||
+                        (tripType === "roundtrip" && toDate
+                          ? date > toDate
+                          : false)
+                      }
                     />
                   </PopoverContent>
                 </Popover>
@@ -204,7 +223,10 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                           }
                           setToDate(date);
                         }}
-                        disabled={(date) => !isDayAvailable(date, destination) || (fromDate ? date < fromDate : false)}
+                        disabled={(date) =>
+                          !isDayAvailable(date, destination) ||
+                          (fromDate ? date < fromDate : false)
+                        }
                       />
                     </PopoverContent>
                   </Popover>
