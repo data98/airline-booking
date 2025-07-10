@@ -112,6 +112,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // validation
     if (!origin || !destination) {
       toast.error("Please select both origin and destination.");
       return;
@@ -265,9 +266,6 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                       onSelect={(date) => {
                         if (!date) return;
                         if (!isDayAvailable(date, origin)) {
-                          // alert(
-                          //   "This departure date is unavailable for the selected origin."
-                          // );
                           toast.error(
                             "This departure date is unavailable for the selected origin."
                           );
@@ -312,9 +310,6 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                         onSelect={(date) => {
                           if (!date) return;
                           if (!isDayAvailable(date, destination)) {
-                            // alert(
-                            //   "This return date is unavailable for the selected destination."
-                            // );
                             toast.error(
                               "This return date is unavailable for the selected destination."
                             );
