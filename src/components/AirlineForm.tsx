@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlightDestination } from "@/types/FlightDestination";
 import Bounded from "./Bounded";
 import { Label } from "./ui/label";
@@ -21,6 +21,7 @@ import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { toast } from "sonner";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // TODO: implement the airlineForm component
 
@@ -35,6 +36,9 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const handleTripTypeChange = (type: "roundtrip" | "oneway") => {
     setTripType(type);
 
@@ -42,7 +46,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
       setToDate(undefined);
     }
 
-    // update URL params
+    updateURLParams({ type, toDate: undefined });
   };
 
   const getDestinationByCode = (
@@ -64,27 +68,45 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
   const handleOriginChange = (code: string) => {
     setOrigin(code);
 
+    let overrides: any = { origin: code };
+
     if (fromDate && !isDayAvailable(fromDate, code)) {
       setFromDate(undefined);
       toast.error(
         "Previously selected departure date is unavailable for the new origin."
       );
+      overrides.fromDate = undefined;
     }
 
-    // update URL params
+    if (code === destination) {
+      toast.error("Origin and destination cannot be the same.");
+      setDestination(""); // reset destination
+      overrides.destination = "";
+    }
+
+    updateURLParams(overrides);
   };
 
   const handleDestinationChange = (code: string) => {
     setDestination(code);
+
+    let overrides: any = { destination: code };
 
     if (toDate && !isDayAvailable(toDate, code)) {
       setToDate(undefined);
       toast.error(
         "Previously selected return date is unavailable for the new destination."
       );
+      overrides.toDate = undefined;
     }
 
-    // update URL params
+    if (code === origin) {
+      toast.error("Origin and destination cannot be the same.");
+      setOrigin(""); // reset origin
+      overrides.origin = "";
+    }
+
+    updateURLParams(overrides);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,6 +134,50 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
 
     toast.success("Submitting...");
   };
+
+  const updateURLParams = (
+    overrides: Partial<{
+      origin: string;
+      destination: string;
+      type: "roundtrip" | "oneway";
+      fromDate: Date | undefined;
+      toDate: Date | undefined;
+    }> = {}
+  ) => {
+    const params = new URLSearchParams();
+
+    const originParam = "origin" in overrides ? overrides.origin : origin;
+    const typeParam = "type" in overrides ? overrides.type : tripType;
+    const destinationParam =
+      "destination" in overrides ? overrides.destination : destination;
+    const from = "fromDate" in overrides ? overrides.fromDate : fromDate;
+    const to = "toDate" in overrides ? overrides.toDate : toDate;
+
+    if (originParam) params.set("origin", originParam);
+    if (typeParam) params.set("type", typeParam);
+    if (destinationParam) params.set("destination", destinationParam);
+    if (from) params.set("departureDate", from.toLocaleDateString("en-CA"));
+    if (typeParam === "roundtrip" && to) {
+      params.set("returnDate", to.toLocaleDateString("en-CA"));
+    }
+
+    router.push(`/?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    const originParam = searchParams.get("origin");
+    const typeParam = searchParams.get("type");
+    const destinationParam = searchParams.get("destination");
+    const departureParam = searchParams.get("departureDate");
+    const returnParam = searchParams.get("returnDate");
+
+    if (originParam) setOrigin(originParam);
+    if (typeParam === "oneway" || typeParam === "roundtrip")
+      setTripType(typeParam);
+    if (destinationParam) setDestination(destinationParam);
+    if (departureParam) setFromDate(new Date(departureParam));
+    if (returnParam) setToDate(new Date(returnParam));
+  }, []);
 
   return (
     <Bounded>
@@ -142,7 +208,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
               {/* Origin */}
               <div className="main-input">
                 <Label>Origin</Label>
-                <Select onValueChange={handleOriginChange}>
+                <Select value={origin} onValueChange={handleOriginChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select origin" />
                   </SelectTrigger>
@@ -159,7 +225,10 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
               {/* Destination */}
               <div className="main-input">
                 <Label>Destination</Label>
-                <Select onValueChange={handleDestinationChange}>
+                <Select
+                  value={destination}
+                  onValueChange={handleDestinationChange}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select destination" />
                   </SelectTrigger>
@@ -202,9 +271,12 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                           toast.error(
                             "This departure date is unavailable for the selected origin."
                           );
+                          setFromDate(undefined);
+                          updateURLParams({ fromDate: undefined });
                           return;
                         }
                         setFromDate(date);
+                        updateURLParams({ fromDate: date });
                       }}
                       disabled={(date) =>
                         !isDayAvailable(date, origin) ||
@@ -246,9 +318,12 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
                             toast.error(
                               "This return date is unavailable for the selected destination."
                             );
+                            setToDate(undefined);
+                            updateURLParams({ toDate: undefined });
                             return;
                           }
                           setToDate(date);
+                          updateURLParams({ toDate: date });
                         }}
                         disabled={(date) =>
                           !isDayAvailable(date, destination) ||
