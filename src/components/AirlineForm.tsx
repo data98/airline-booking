@@ -139,12 +139,11 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
     toast.success("Submitting...");
   };
 
-  console.log("________________________");
-  console.log("origin", origin);
-  console.log("destination", destination);
-  console.log("tripType", tripType);
-  console.log("fromDateStr", fromDateStr);
-  console.log("toDateStr", toDateStr);
+  useEffect(() => {
+    if (!tripType) {
+      setTripType("roundtrip"); 
+    }
+  }, [tripType, setTripType]);
 
   return (
     <Bounded>
