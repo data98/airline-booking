@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter, Nunito, Nunito_Sans } from "next/font/google";
 import { Toaster } from "sonner";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,8 +32,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={clsx(nunito.variable, nunitoSans.variable)}>
-        {children}
-        <Toaster/>
+        <NuqsAdapter>{children}</NuqsAdapter>
+        <Toaster />
       </body>
     </html>
   );
