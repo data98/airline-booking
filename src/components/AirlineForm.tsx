@@ -1,28 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FlightDestination } from "@/types/FlightDestination";
 import Bounded from "./Bounded";
-import { Label } from "./ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "./ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
-import { format } from "date-fns";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { toast } from "sonner";
-import { useQueryState, parseAsString, parseAsStringLiteral } from "nuqs";
+import { useQueryState, parseAsString } from "nuqs";
 import { useSearchParams } from "next/navigation";
+import { TripTypeSelector } from "./TripTypeSelector";
+import { CitySelector } from "./CitySelector";
+import { DatePicker } from "./DatePicker";
 
 // TODO: implement the airlineForm component
 
@@ -141,7 +128,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
   };
 
   const searchParams = useSearchParams();
-  
+
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
     if (!searchParams.has("type")) setTripType("roundtrip");
@@ -156,148 +143,84 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
       <form onSubmit={handleSubmit} className="w-full flex justify-center">
         <div className="mt-24 border rounded-lg p-8 flex flex-col items-start gap-6 w-[500px]">
           {/* Trip Type */}
-          <RadioGroup
-            value={tripType}
-            onValueChange={handleTripTypeChange}
-            className="flex justify-center gap-8"
-          >
-            <div className="flex items-center gap-2">
-              <RadioGroupItem value="roundtrip" id="r1" />
-              <Label htmlFor="r1">Roundtrip</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <RadioGroupItem value="oneway" id="r2" />
-              <Label htmlFor="r2">One-way</Label>
-            </div>
-          </RadioGroup>
+          <TripTypeSelector
+            value={tripType as "roundtrip" | "oneway"}
+            onChange={handleTripTypeChange}
+          />
 
           <div className="flex flex-col gap-3 w-full">
             <div className="flex justify-between gap-4">
               {/* Origin */}
               <div className="main-input">
-                <Label>Origin</Label>
-                <Select
-                  value={origin ?? undefined}
-                  onValueChange={handleOriginChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select origin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {destinations.map((d) => (
-                      <SelectItem key={d.code} value={d.code}>
-                        {d.city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CitySelector
+                  label="Origin"
+                  value={origin}
+                  onChange={handleOriginChange}
+                  destinations={destinations}
+                />
               </div>
 
               {/* Destination */}
               <div className="main-input">
-                <Label>Destination</Label>
-                <Select
-                  value={destination ?? undefined}
-                  onValueChange={handleDestinationChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select destination" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {destinations.map((d) => (
-                      <SelectItem key={d.code} value={d.code}>
-                        {d.city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CitySelector
+                  label="Destination"
+                  value={destination}
+                  onChange={handleDestinationChange}
+                  destinations={destinations}
+                />
               </div>
             </div>
 
             <div className="flex justify-between gap-4 w-full">
               {/* Departure Date */}
               <div className="main-input">
-                <Label>Departure date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      {fromDate
-                        ? format(fromDate, "dd/MM/yyyy")
-                        : "Pick departure date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={fromDate}
-                      onSelect={(date) => {
-                        if (!date) return;
-                        if (!isDayAvailable(date, origin ?? undefined)) {
-                          toast.error(
-                            "This departure date is unavailable for the selected origin."
-                          );
-                          setFromDateStr(null); // remove from URL
-                          return;
-                        }
-
-                        // Save as ISO string YYYY-MM-DD
-                        setFromDateStr(formatDate(date));
-                      }}
-                      disabled={(date) =>
-                        !isDayAvailable(date, origin ?? undefined) ||
-                        (tripType === "roundtrip" && toDate
-                          ? date > toDate
-                          : false) ||
-                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  label="Departure date"
+                  value={fromDate}
+                  onSelect={(date) => {
+                    if (!date) return;
+                    if (!isDayAvailable(date, origin ?? undefined)) {
+                      toast.error(
+                        "This departure date is unavailable for the selected origin."
+                      );
+                      setFromDateStr(null);
+                      return;
+                    }
+                    setFromDateStr(formatDate(date));
+                  }}
+                  disabled={(date) =>
+                    !isDayAvailable(date, origin ?? undefined) ||
+                    (tripType === "roundtrip" && toDate
+                      ? date > toDate
+                      : false) ||
+                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                  }
+                />
               </div>
 
               {/* Return Date */}
               {tripType !== "oneway" && (
                 <div className="main-input">
-                  <Label>Return date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        {toDate
-                          ? format(toDate, "dd/MM/yyyy")
-                          : "Pick return date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={toDate}
-                        onSelect={(date) => {
-                          if (!date) return;
-
-                          if (!isDayAvailable(date, destination ?? undefined)) {
-                            toast.error(
-                              "This return date is unavailable for the selected destination."
-                            );
-                            setToDateStr(null);
-                            return;
-                          }
-
-                          setToDateStr(formatDate(date));
-                        }}
-                        disabled={(date) =>
-                          !isDayAvailable(date, destination ?? undefined) ||
-                          (fromDate ? date < fromDate : false) ||
-                          date < new Date(new Date().setHours(0, 0, 0, 0))
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DatePicker
+                    label="Return date"
+                    value={toDate}
+                    onSelect={(date) => {
+                      if (!date) return;
+                      if (!isDayAvailable(date, destination ?? undefined)) {
+                        toast.error(
+                          "This return date is unavailable for the selected destination."
+                        );
+                        setToDateStr(null);
+                        return;
+                      }
+                      setToDateStr(formatDate(date));
+                    }}
+                    disabled={(date) =>
+                      !isDayAvailable(date, destination ?? undefined) ||
+                      (fromDate ? date < fromDate : false) ||
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
+                  />
                 </div>
               )}
             </div>
