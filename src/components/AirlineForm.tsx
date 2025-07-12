@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { toast } from "sonner";
 import { useQueryState, parseAsString, parseAsStringLiteral } from "nuqs";
+import { useSearchParams } from "next/navigation";
 
 // TODO: implement the airlineForm component
 
@@ -139,11 +140,12 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
     toast.success("Submitting...");
   };
 
+  const searchParams = useSearchParams();
+  
   useEffect(() => {
-    if (!tripType) {
-      setTripType("roundtrip"); 
-    }
-  }, [tripType, setTripType]);
+    const params = new URLSearchParams(searchParams.toString());
+    if (!searchParams.has("type")) setTripType("roundtrip");
+  }, []);
 
   return (
     <Bounded>
