@@ -10,6 +10,8 @@ import { useSearchParams } from "next/navigation";
 import { TripTypeSelector } from "./TripTypeSelector";
 import { CitySelector } from "./CitySelector";
 import { DatePicker } from "./DatePicker";
+import { bookFlight } from "@/actions/bookFlight";
+import { useActionState } from "react";
 
 // TODO: implement the airlineForm component
 
@@ -18,6 +20,7 @@ export interface AirlineFormProps {
 }
 
 export const AirlineForm = ({ destinations }: AirlineFormProps) => {
+  const [result, submitAction, isPending] = useActionState(bookFlight, null);
   const [origin, setOrigin] = useQueryState(
     "origin",
     parseAsString.withDefault("")
@@ -100,39 +103,12 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // validation
-    if (!origin || !destination) {
-      toast.error("Please select both origin and destination.");
-      return;
-    }
-
-    if (origin === destination) {
-      toast.error("Origin and destination cannot be the same.");
-      return;
-    }
-
-    if (!fromDate) {
-      toast.error("Please select a departure date.");
-      return;
-    }
-
-    if (tripType === "roundtrip" && !toDate) {
-      toast.error("Please select a return date.");
-      return;
-    }
-
-    toast.success("Submitting...");
-  };
-
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
-    if (!searchParams.has("type")) setTripType("roundtrip");
-  }, []);
+    if (!params.has("type")) setTripType("roundtrip");
+  }, [searchParams, setTripType]);
 
   return (
     <Bounded>
@@ -140,7 +116,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
         Welcome to the Digido Airlines!
       </h1>
 
-      <form onSubmit={handleSubmit} className="w-full flex justify-center">
+      <form action={submitAction} className="w-full flex flex-col items-center">
         <div className="mt-24 border rounded-lg p-8 flex flex-col items-start gap-6 w-[500px]">
           {/* Trip Type */}
           <TripTypeSelector
@@ -227,10 +203,28 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full ">
-            Book Flight
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Booking..." : "Book Flight"}
           </Button>
         </div>
+        {result?.success && (
+          <div className="w-[500px] mt-4 p-4 border rounded-md bg-green-100 text-green-800">
+            <p>
+              <strong>Booking Confirmed!</strong>
+            </p>
+            <p>Booking ID: {result.bookingId}</p>
+            <p>Status: {result.status}</p>
+            <p>Timestamp: {result.timestamp}</p>
+          </div>
+        )}
+
+        {result?.error && (
+          <div className="w-[500px] mt-4 p-4 border rounded-md bg-red-100 text-red-800">
+            <p>
+              <strong>Error:</strong> {result.error}
+            </p>
+          </div>
+        )}
       </form>
     </Bounded>
   );
