@@ -208,7 +208,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
           </Button>
         </div>
         {result?.success && (
-          <div className="w-[500px] mt-4 p-4 border rounded-md bg-green-100 text-green-800">
+          <div className="w-[500px] mt-4 p-4 border border-green-300 rounded-md bg-green-100 text-green-800">
             <p>
               <strong>Booking Confirmed!</strong>
             </p>
@@ -219,7 +219,7 @@ export const AirlineForm = ({ destinations }: AirlineFormProps) => {
         )}
 
         {result?.error && (
-          <div className="w-[500px] mt-4 p-4 border rounded-md bg-red-100 text-red-800">
+          <div className="w-[500px] mt-4 p-4 border border-red-300 rounded-md bg-red-100 text-red-800">
             <p>
               <strong>Error:</strong> {result.error}
             </p>
