@@ -1,4 +1,4 @@
-import { AirlineForm } from "@/components/AirlineForm";
+import { AirlineFormWrapper } from "@/components/AirlineFormWrapper";
 import { FlightDestination } from "@/types/FlightDestination";
 
 export default function Home() {
@@ -33,5 +33,5 @@ export default function Home() {
     },
   ];
 
-  return <AirlineForm destinations={destinations} />;
+  return <AirlineFormWrapper destinations={destinations} />;
 }
