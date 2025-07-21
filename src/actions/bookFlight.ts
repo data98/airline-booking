@@ -19,7 +19,7 @@ export async function bookFlight(previousState: any, formData: FormData) {
 
   try {
     const res = await axios.post(
-      "https://request-bin-gin-2h5as7tczq-lz.a.run.app/",
+      "https://airline-booking-nine.vercel.app/api/booking",
       payload,
       {
         headers: {
